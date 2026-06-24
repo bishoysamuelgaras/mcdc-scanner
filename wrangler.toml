@@ -1,0 +1,8 @@
+name = "mcdc-player-scanner"
+compatibility_date = "2026-06-24"
+pages_build_output_dir = "./dist"
+
+# Runtime variables/secrets are configured in Cloudflare Dashboard:
+# SUPABASE_URL
+# SUPABASE_SERVICE_ROLE_KEY
+# ALLOWED_ORIGIN

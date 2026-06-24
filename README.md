@@ -1,90 +1,103 @@
-# React + Vite + Hono + Cloudflare Workers
+# MCDC Academy Player Scanner
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+نسخة Read-Only تقرأ بيانات اللاعبين مباشرة من جدول Supabase الحالي:
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
-
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
-
-<!-- dash-content-start -->
-
-🚀 Supercharge your web development with this powerful stack:
-
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
-
-### ✨ Key Features
-
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
-
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-To start a new project with this template, run:
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
+```text
+public.academy_people
 ```
 
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
+لأعلى سرعة أثناء الاسكان، شغّل SQL رقم `007` مرة واحدة. لا يتم إنشاء جدول `players` ولا تعديل بيانات اللاعبين.
 
-## Development
+## مصدر بيانات اللاعب
 
-Install dependencies:
+Cloudflare Pages Function الموجودة في:
+
+```text
+functions/api/lookup-player.ts
+```
+
+تبحث فقط في جدول `academy_people` عن طريق الحقل:
+
+```text
+unique_number
+```
+
+والحقول المعروضة في الكارت مربوطة كالتالي:
+
+| من جدول academy_people | في الكارت |
+|---|---|
+| academy_name / church_name | اسم الأكاديمية |
+| full_name_ar | الاسم العربي |
+| full_name_en | الاسم الإنجليزي |
+| title_raw / description_raw / member_type | الصفة |
+| player_number / shirt_number_raw | رقم اللاعب |
+| unique_number | الرقم المميز |
+| image_url | صورة اللاعب |
+
+## Environment Variables المطلوبة في Cloudflare Pages
+
+```env
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+ALLOWED_ORIGIN=*
+```
+
+> لا يوجد متغير باسم `ACADEMY_PEOPLE_TABLE` في هذه النسخة. اسم الجدول مثبت داخل الكود حتى لا يرجع المشروع بالخطأ إلى `players`.
+
+## سبب خطأ public.ACADEMY_PEOPLE
+
+لو ظهر خطأ مثل:
+
+```text
+Could not find the table 'public.ACADEMY_PEOPLE' in the schema cache - Perhaps you meant the table 'public.academy_people'
+```
+
+فهذا معناه أن Supabase شايف اسم الجدول بالأحرف الصغيرة. هذه النسخة تستخدم `public.academy_people` مباشرة.
+
+## سبب خطأ public.players
+
+لو ظهر خطأ مثل:
+
+```text
+Could not find the table 'public.players' in the schema cache
+```
+
+فهذا معناه غالبًا أن النسخة المنشورة ما زالت تستخدم Function قديمة أو Deploy قديم. هذه النسخة لا تحتوي على Netlify Functions ولا تبحث في `players` نهائيًا.
+
+## التشغيل محليًا
 
 ```bash
 npm install
-```
-
-Start the development server with:
-
-```bash
 npm run dev
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+للتجربة الأقرب لـ Cloudflare، شغّل build ثم Pages dev:
 
-## Production
+```bash
+npm run build
+npx wrangler pages dev dist
+```
 
-Build your project for production:
+## Build
 
 ```bash
 npm run build
 ```
 
-Preview your build locally:
+## Cloudflare deployment
 
-```bash
-npm run preview
+راجع الملف:
+
+```text
+CLOUDFLARE_DEPLOYMENT.md
 ```
 
-Deploy your project to Cloudflare Workers:
+## Performance SQL
 
-```bash
-npm run build && npm run deploy
+لتسريع البحث أثناء الاسكان، شغّل مرة واحدة:
+
+```text
+supabase/sql/007_speed_indexes_academy_people.sql
 ```
 
-Monitor your workers:
-
-```bash
-npx wrangler tail
-```
-
-## Additional Resources
-
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+هذا SQL ينشئ Index + Read-only RPC فقط، ولا يغيّر بيانات اللاعبين.

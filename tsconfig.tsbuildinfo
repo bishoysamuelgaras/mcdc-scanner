@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/mobileresultsheet.tsx","./src/components/mobilescannermodal.tsx","./src/components/playercard.tsx","./src/components/resultstage.tsx","./src/components/scannerpanel.tsx","./src/hooks/usescannerbuffer.ts","./src/lib/api.ts","./src/lib/qr.ts","./src/types/player.ts"],"version":"5.9.3"}
